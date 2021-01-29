@@ -401,6 +401,36 @@ class CloudFrontSigner(object):
         return base64.b64encode(
             data).replace(b'+', b'-').replace(b'=', b'_').replace(b'/', b'~')
 
+    def generate_signed_cookies(self, resource, date_less_than, date_greater_than=None, ip_address=None):
+        """Creates signed CloudFront cookies based on given parameters.
+
+        :type resource: str
+        :param resource: URL of the file
+
+        :type date_less_than: datetime
+        :param date_less_than: The permission will expire after that date and time
+
+        :type date_greater_than: datetime
+        :param date_greater_than: The permission will start after that date and time
+
+        :type ip_address: str
+        :param ip_address: IP address
+
+        :rtype: dict
+        :return: Signed cookies.
+        """
+        policy = self.build_policy(resource,
+                                   date_less_than,
+                                   date_greater_than=date_greater_than,
+                                   ip_address=ip_address).encode('utf8')
+        signature = self.rsa_signer(policy)
+
+        return {
+            "CloudFront-Policy": self._url_b64encode(policy).decode('utf8'),
+            "CloudFront-Signature": self._url_b64encode(signature).decode('utf8'),
+            "CloudFront-Key-Pair-Id": self.key_id,
+        }
+
 
 def add_generate_db_auth_token(class_attributes, **kwargs):
     class_attributes['generate_db_auth_token'] = generate_db_auth_token
