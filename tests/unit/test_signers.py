@@ -589,6 +589,20 @@ class TestCloudfrontSigner(BaseSignerTest):
         result = self.signer.generate_signed_cookies(
             'foo',
             datetime.datetime(2016, 1, 1),
+        )
+        cf_policy = 'eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiZm9vIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY' \
+                    '2hUaW1lIjoxNDUxNjA2NDAwfX19XX0_'
+        expected = {
+            'CloudFront-Policy': cf_policy,
+            'CloudFront-Signature': 'c2lnbmVk',
+            'CloudFront-Key-Pair-Id': 'MY_KEY_ID'
+        }
+        self.assertDictEqual(result, expected)
+
+    def test_generate_signed_cookies_with_custom_policy(self):
+        result = self.signer.generate_signed_cookies(
+            'foo',
+            datetime.datetime(2016, 1, 1),
             date_greater_than=datetime.datetime(2015, 12, 1),
             ip_address='12.34.56.78/9',
         )
